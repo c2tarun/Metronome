@@ -1,6 +1,10 @@
 package com.mad.metronome;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +18,9 @@ import com.parse.GetDataCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParsePush;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +39,9 @@ public class PlayActivity extends AppCompatActivity {
     Button btnStop;
     Button btnReady;
     String groupId;
+    BroadcastReceiver timeStampReceiver;
+    public static final String CHANNEL_PREFIX = "ch";
+    String channelName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +50,12 @@ public class PlayActivity extends AppCompatActivity {
         btnStop = (Button) findViewById(R.id.btnStopSong);
         btnReady = (Button) findViewById(R.id.readyButton);
         groupId = getIntent().getExtras().getString(GroupDetailActivity.GROUP_ID);
+        channelName = CHANNEL_PREFIX + groupId;
+        String from = getIntent().getExtras().getString("From");
+        if (from != null && from.equals("Push")) {
+            Log.d(TAG, "Came from push");
+            return;
+        }
 
         showProgressDialog("Downloading Metronome Song.");
 
@@ -78,9 +93,44 @@ public class PlayActivity extends AppCompatActivity {
             }
         });
 
+        timeStampReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String ts = intent.getExtras().getString(PushReceiver.TIMESTAMP);
+                Log.d(TAG, "Received push from play activity " + ts);
+            }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(timeStampReceiver, new IntentFilter("com.mad.metronome.TimeStampPush"));
+        ParsePush.subscribeInBackground(channelName, new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if(e != null) {
+                    Log.d(TAG, e.getMessage());
+                } else {
+                    Log.d(TAG, "Subscribing to channel " + groupId);
+                }
+            }
+        });
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(timeStampReceiver);
+        Log.d(TAG, "Unsubscribing from channel " + groupId);
+        ParsePush.unsubscribeInBackground(channelName);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
     // Test method, don't use
     private void callHelloWorld() {
@@ -89,7 +139,7 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void done(Object o, ParseException e) {
                 if (e == null) {
-//                            String msg = o.getString("msg");
+//                            String msg = o.getString("msg");mike
                     Log.d(TAG, "Method called");
                 } else {
                     Log.d(TAG, e.getMessage());
@@ -136,4 +186,5 @@ public class PlayActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 }
