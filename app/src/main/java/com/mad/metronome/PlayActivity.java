@@ -39,30 +39,33 @@ public class PlayActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     File metronomeSong;
     byte[] metronomeBytes;
-    Button btnStop;
+    Button btnLastLoop;
     Button btnReady;
     String groupId;
     BroadcastReceiver timeStampReceiver;
+    BroadcastReceiver lastLoopReceiver;
     public static final String CHANNEL_PREFIX = "ch";
     String channelName;
     TextView tvTimer;
-    Button btnPlaySong;
+    boolean isLeader;
+    boolean enableLooping = true;
+    private static final int COUNTER_LIMIT = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
-        btnStop = (Button) findViewById(R.id.btnStopSong);
+        btnLastLoop = (Button) findViewById(R.id.btnLastLoop);
         btnReady = (Button) findViewById(R.id.readyButton);
         groupId = getIntent().getExtras().getString(GroupDetailActivity.GROUP_ID);
         tvTimer = (TextView) findViewById(R.id.timerTextView);
-        btnPlaySong = (Button) findViewById(R.id.playSongButton);
         channelName = CHANNEL_PREFIX + groupId;
         String from = getIntent().getExtras().getString("From");
         if (from != null && from.equals("Push")) {
             Log.d(TAG, "Came from push");
             return;
         }
+        isLeader = getIntent().getExtras().getBoolean(GroupDetailActivity.IS_LEADER);
 
         showProgressDialog("Downloading Metronome Song.");
 
@@ -94,9 +97,10 @@ public class PlayActivity extends AppCompatActivity {
         btnReady.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                btnReady.setEnabled(false);
                 ParseUtil.setMemberStatus(groupId, ParseUser.getCurrentUser().getUsername(), ParseUtil.UserStatus.READY);
                 Toast.makeText(PlayActivity.this, "Updated DB", Toast.LENGTH_SHORT).show();
-//                showProgressDialog("Waiting for others.");
+                showProgressDialog("Waiting for others.");
             }
         });
 
@@ -105,16 +109,22 @@ public class PlayActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 String ts = intent.getExtras().getString(PushReceiver.TIMESTAMP);
                 long currentTime = new Date().getTime();
-                Log.d(TAG, "Received pus555h from play activity " + ts);
+                Log.d(TAG, "Received push from play activity " + ts);
 
                 long timerStartTime = Long.parseLong(ts);
-                Toast.makeText(PlayActivity.this, "Timer will start after " + (timerStartTime - currentTime), Toast.LENGTH_LONG).show();
+                Toast.makeText(PlayActivity.this, "Current Time " + currentTime, Toast.LENGTH_SHORT).show();
                 Timer countDownStart = new Timer();
                 countDownStart.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         Log.d(TAG, "Timer started");
-                        for (int i = 10; i >= 1; i--) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dismissProgressDialog();
+                            }
+                        });
+                        for (int i = COUNTER_LIMIT; i >= 1; i--) {
                             runOnUiThread(new MyThread(i + ""));
                             try {
                                 Thread.sleep(1000);
@@ -132,10 +142,25 @@ public class PlayActivity extends AppCompatActivity {
                 }, new Date(timerStartTime));
             }
         };
-        btnPlaySong.setOnClickListener(new View.OnClickListener() {
+
+        lastLoopReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG,"Received push for last loop");
+                enableLooping = false;
+            }
+        };
+
+
+
+        btnLastLoop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playSong();
+                btnLastLoop.setEnabled(false);
+                registerReceiver(lastLoopReceiver, new IntentFilter("com.mad.metronome.LastLoop"));
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("GroupId", groupId);
+                ParseCloud.callFunctionInBackground("last_loop", params);
             }
         });
     }
@@ -181,7 +206,6 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void done(Object o, ParseException e) {
                 if (e == null) {
-//                            String msg = o.getString("msg");mike
                     Log.d(TAG, "Method called");
                 } else {
                     Log.d(TAG, e.getMessage());
@@ -206,22 +230,35 @@ public class PlayActivity extends AppCompatActivity {
     }
 
 
-    //playSong is a test method and should not be used for anything else
     MediaPlayer mp;
 
     private void playSong() {
+        if (isLeader) {
+            btnLastLoop.setVisibility(View.VISIBLE);
+        }
+        tvTimer.setVisibility(View.INVISIBLE);
         mp = new MediaPlayer();
+//        mp.setLooping(true);
+        mp.setScreenOnWhilePlaying(true);
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.d(TAG, "Loop completed, continue " + enableLooping);
+                if (enableLooping) {
+                    mp.start();
+                } else {
+                    Intent intent = new Intent(PlayActivity.this, GroupDetailActivity.class);
+                    startActivity(intent);
+                    unregisterReceiver(lastLoopReceiver);
+                    finish();
+                }
+            }
+        });
         try {
             FileInputStream fis = new FileInputStream(metronomeSong);
             mp.setDataSource(fis.getFD());
             mp.prepare();
             mp.start();
-            btnStop.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mp.stop();
-                }
-            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

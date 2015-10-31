@@ -18,6 +18,7 @@ import com.parse.ParseUser;
 
 public class GroupDetailActivity extends AppCompatActivity {
 
+    public static final String IS_LEADER = "is leader";
     EditText etGroupId;
     CheckBox cbIsLeader;
     EditText tvGrpStrength;
@@ -107,9 +108,11 @@ public class GroupDetailActivity extends AppCompatActivity {
     }
 
     public void nextActivity() {
+        boolean isLeader = cbIsLeader.isChecked();
         Intent intent = new Intent(GroupDetailActivity.this, PlayActivity.class);
         intent.putExtra(GROUP_ID, groupId);
+        intent.putExtra(IS_LEADER, isLeader);
         startActivity(intent);
-
+        finish();
     }
 }

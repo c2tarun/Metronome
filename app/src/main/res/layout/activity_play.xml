@@ -8,47 +8,47 @@
     tools:context="com.mad.metronome.PlayActivity">
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="READY!!"
         android:id="@+id/readyButton"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="97dp" />
+        android:layout_marginBottom="50dp"
+        android:text="READY!!"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_width="270dp"
+        android:layout_height="80dp"
+        android:background="@drawable/ready_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="STOP"
-        android:id="@+id/btnStopSong"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:text="Last Loop"
+        android:id="@+id/btnLastLoop"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/last_loop_button"
+        android:visibility="invisible"
+        android:layout_below="@+id/timerTextView"
+        android:layout_alignStart="@+id/readyButton" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Press Start when you are ready"
+        android:text="Ready when you are."
         android:id="@+id/textView"
-        android:layout_above="@+id/btnStopSong"
-        android:layout_centerHorizontal="true" />
+        android:layout_above="@+id/readyButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="0"
         android:id="@+id/timerTextView"
-        android:layout_below="@+id/btnStopSong"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="65dp" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Play Song"
-        android:id="@+id/playSongButton"
-        android:layout_below="@+id/btnStopSong"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentTop="true"
+        android:textSize="150dp"
+        android:textAlignment="center"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

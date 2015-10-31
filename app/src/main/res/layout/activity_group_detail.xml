@@ -7,15 +7,20 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.mad.metronome.GroupDetailActivity"
     android:orientation="vertical"
-    android:gravity="center_vertical|center_horizontal">
+    android:gravity="center_vertical|center_horizontal"
+    android:weightSum="1">
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:hint="Enter Group ID"
+        android:hint="Grp ID"
         android:id="@+id/groupIdTV"
-        android:layout_marginTop="15dp" />
+        android:layout_marginTop="15dp"
+        android:layout_weight="0.19"
+        android:inputType="number"
+        android:textSize="100dp"
+        android:textAlignment="center" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -23,7 +28,8 @@
         android:text="Leader"
         android:id="@+id/leaderCB"
         android:checked="false"
-        android:layout_marginTop="15dp" />
+        android:layout_marginTop="15dp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:id="@+id/strengthLayout"
@@ -53,11 +59,16 @@
 
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="164dp"
         android:layout_height="wrap_content"
-        android:text="Next >"
+        android:text="Join"
         android:id="@+id/nextButton"
-        android:layout_marginTop="15dp" />
+        android:layout_marginTop="15dp"
+        android:layout_weight="0.11"
+        android:textSize="40dp"
+        android:background="#3a6ad3"
+        android:textColor="#ffffff"
+        android:textStyle="bold|italic" />
 
     <Button
         android:layout_width="wrap_content"
