@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FunctionCallback;
@@ -20,15 +21,17 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class PlayActivity extends AppCompatActivity {
 
@@ -42,6 +45,8 @@ public class PlayActivity extends AppCompatActivity {
     BroadcastReceiver timeStampReceiver;
     public static final String CHANNEL_PREFIX = "ch";
     String channelName;
+    TextView tvTimer;
+    Button btnPlaySong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,8 @@ public class PlayActivity extends AppCompatActivity {
         btnStop = (Button) findViewById(R.id.btnStopSong);
         btnReady = (Button) findViewById(R.id.readyButton);
         groupId = getIntent().getExtras().getString(GroupDetailActivity.GROUP_ID);
+        tvTimer = (TextView) findViewById(R.id.timerTextView);
+        btnPlaySong = (Button) findViewById(R.id.playSongButton);
         channelName = CHANNEL_PREFIX + groupId;
         String from = getIntent().getExtras().getString("From");
         if (from != null && from.equals("Push")) {
@@ -97,25 +104,60 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String ts = intent.getExtras().getString(PushReceiver.TIMESTAMP);
-                Log.d(TAG, "Received push from play activity " + ts);
+                long currentTime = new Date().getTime();
+                Log.d(TAG, "Received pus555h from play activity " + ts);
+
+                long timerStartTime = Long.parseLong(ts);
+                Toast.makeText(PlayActivity.this, "Timer will start after " + (timerStartTime - currentTime), Toast.LENGTH_LONG).show();
+                Timer countDownStart = new Timer();
+                countDownStart.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "Timer started");
+                        for (int i = 10; i >= 1; i--) {
+                            runOnUiThread(new MyThread(i + ""));
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                playSong();
+                            }
+                        });
+                    }
+                }, new Date(timerStartTime));
             }
         };
+        btnPlaySong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playSong();
+            }
+        });
+    }
+
+    class MyThread extends Thread {
+        String label;
+
+        public MyThread(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public void run() {
+            tvTimer.setText(label);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(timeStampReceiver, new IntentFilter("com.mad.metronome.TimeStampPush"));
-        ParsePush.subscribeInBackground(channelName, new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if(e != null) {
-                    Log.d(TAG, e.getMessage());
-                } else {
-                    Log.d(TAG, "Subscribing to channel " + groupId);
-                }
-            }
-        });
+        ParsePush.subscribeInBackground(channelName);
 
     }
 
@@ -123,7 +165,7 @@ public class PlayActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(timeStampReceiver);
-        Log.d(TAG, "Unsubscribing from channel " + groupId);
+        Log.d(TAG, "Unsubscribing from channel " + channelName);
         ParsePush.unsubscribeInBackground(channelName);
     }
 
