@@ -159,13 +159,12 @@ public class PlayActivity extends AppCompatActivity {
             }
         };
 
-
+        registerReceiver(lastLoopReceiver, new IntentFilter("com.mad.metronome.LastLoop"));
 
         btnLastLoop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btnLastLoop.setEnabled(false);
-                registerReceiver(lastLoopReceiver, new IntentFilter("com.mad.metronome.LastLoop"));
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("GroupId", groupId);
                 ParseCloud.callFunctionInBackground("last_loop", params);
