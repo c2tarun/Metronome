@@ -1,5 +1,6 @@
 package com.mad.metronome;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -22,6 +23,8 @@ public class GroupDetailActivity extends AppCompatActivity {
     EditText strengthTV;
     Button nextButton;
     View strengthLayout;
+    public static final String GROUP_ID = "Groupid";
+    String groupId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +54,7 @@ public class GroupDetailActivity extends AppCompatActivity {
 
                 boolean allGood = true;
 
-                final String groupId = groupIdET.getText().toString();
+                groupId = groupIdET.getText().toString();
                 if (groupId.isEmpty()) {
                     allGood = false;
                 }
@@ -88,12 +91,15 @@ public class GroupDetailActivity extends AppCompatActivity {
                         }
                     });
                 }
-                ParseUtil.getSong(groupId,GroupDetailActivity.this);
+//                ParseUtil.getSong(groupId,GroupDetailActivity.this);
             }
         });
     }
 
     public void nextActivity() {
+        Intent intent = new Intent(GroupDetailActivity.this, PlayActivity.class);
+        intent.putExtra(GROUP_ID, groupId);
+        startActivity(intent);
 
     }
 }
