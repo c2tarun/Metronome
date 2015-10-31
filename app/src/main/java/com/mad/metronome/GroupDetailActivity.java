@@ -18,11 +18,12 @@ import com.parse.ParseUser;
 
 public class GroupDetailActivity extends AppCompatActivity {
 
-    EditText groupIdET;
-    CheckBox leaderCB;
-    EditText strengthTV;
-    Button nextButton;
-    View strengthLayout;
+    EditText etGroupId;
+    CheckBox cbIsLeader;
+    EditText tvGrpStrength;
+    Button btnNext;
+    View layoutStrength;
+    Button btnLogout;
     public static final String GROUP_ID = "Groupid";
     String groupId;
 
@@ -31,38 +32,39 @@ public class GroupDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_detail);
 
-        groupIdET = (EditText) findViewById(R.id.groupIdTV);
-        leaderCB = (CheckBox) findViewById(R.id.leaderCB);
-        strengthTV = (EditText) findViewById(R.id.strengthTV);
-        nextButton = (Button) findViewById(R.id.nextButton);
-        strengthLayout = findViewById(R.id.strengthLayout);
+        etGroupId = (EditText) findViewById(R.id.groupIdTV);
+        cbIsLeader = (CheckBox) findViewById(R.id.leaderCB);
+        tvGrpStrength = (EditText) findViewById(R.id.strengthTV);
+        btnNext = (Button) findViewById(R.id.nextButton);
+        layoutStrength = findViewById(R.id.strengthLayout);
+        btnLogout = (Button) findViewById(R.id.logoutButton);
 
-        leaderCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        cbIsLeader.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    strengthLayout.setVisibility(View.VISIBLE);
+                    layoutStrength.setVisibility(View.VISIBLE);
                 } else {
-                    strengthLayout.setVisibility(View.GONE);
+                    layoutStrength.setVisibility(View.GONE);
                 }
             }
         });
 
-        nextButton.setOnClickListener(new View.OnClickListener() {
+        btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 boolean allGood = true;
 
-                groupId = groupIdET.getText().toString();
+                groupId = etGroupId.getText().toString();
                 if (groupId.isEmpty()) {
                     allGood = false;
                 }
 
                 int groupStrength = 0;
-                if (leaderCB.isChecked()) {
+                if (cbIsLeader.isChecked()) {
                     try {
-                        groupStrength = Integer.parseInt(strengthTV.getText().toString());
+                        groupStrength = Integer.parseInt(tvGrpStrength.getText().toString());
                     } catch (NumberFormatException e) {
                         Toast.makeText(GroupDetailActivity.this, "Enter valid strength", Toast.LENGTH_LONG).show();
                         allGood = false;
@@ -73,7 +75,7 @@ public class GroupDetailActivity extends AppCompatActivity {
                     }
                     if (allGood) {
                         ParseUtil.updateStrengthTable(groupId, groupStrength);
-                        ParseUtil.insertMemberStatus(ParseUser.getCurrentUser().getUsername(), groupId, "NR");
+                        ParseUtil.setMemberStatus(groupId, ParseUser.getCurrentUser().getUsername(), ParseUtil.UserStatus.NOT_READY);
                         nextActivity();
                     }
 
@@ -85,13 +87,21 @@ public class GroupDetailActivity extends AppCompatActivity {
                             if (parseObject == null || e != null) {
                                 Toast.makeText(GroupDetailActivity.this, "Wait for Leader to log in", Toast.LENGTH_SHORT).show();
                             } else {
-                                ParseUtil.insertMemberStatus(groupId, ParseUser.getCurrentUser().getUsername(), "NR");
+                                ParseUtil.setMemberStatus(groupId, ParseUser.getCurrentUser().getUsername(), ParseUtil.UserStatus.NOT_READY);
                                 nextActivity();
                             }
                         }
                     });
                 }
-//                ParseUtil.getSong(groupId,GroupDetailActivity.this);
+            }
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ParseUser.logOut();
+                Intent intent = new Intent(GroupDetailActivity.this, LoginActivity.class);
+                startActivity(intent);
             }
         });
     }
