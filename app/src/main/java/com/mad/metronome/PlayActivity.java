@@ -108,10 +108,18 @@ public class PlayActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String ts = intent.getExtras().getString(PushReceiver.TIMESTAMP);
+                String st = intent.getExtras().getString(PushReceiver.SERVERTIME);
                 long currentTime = new Date().getTime();
                 Log.d(TAG, "Received push from play activity " + ts);
 
                 long timerStartTime = Long.parseLong(ts);
+
+                // Code to fix issue if all are on different network -- START
+                long serverTime = Long.parseLong(st);
+                long timeDiff = currentTime - serverTime;
+                timerStartTime += timeDiff;
+                // -- END
+
                 Toast.makeText(PlayActivity.this, "Current Time " + currentTime, Toast.LENGTH_SHORT).show();
                 Timer countDownStart = new Timer();
                 countDownStart.schedule(new TimerTask() {

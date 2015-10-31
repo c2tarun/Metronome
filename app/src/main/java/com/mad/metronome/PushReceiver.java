@@ -14,6 +14,7 @@ import org.json.JSONObject;
  */
 public class PushReceiver extends ParsePushBroadcastReceiver {
     public static final String TIMESTAMP = "ts";
+    public static final String SERVERTIME = "ct";
     public static final String LAST_LOOP_PUSH = "LastLoop";
     private static final String TAG = PushReceiver.class.getSimpleName();
     public static final String LOOP = "loop";
@@ -31,6 +32,7 @@ public class PushReceiver extends ParsePushBroadcastReceiver {
             if(cause.equals(START_TIMER_PUSH)) {
                 broadcastIntent  = new Intent("com.mad.metronome.TimeStampPush");
                 broadcastIntent.putExtra(TIMESTAMP, data.getString(TIMESTAMP));
+                broadcastIntent.putExtra(SERVERTIME, data.getString(SERVERTIME));
             } else if(cause.equals(LAST_LOOP_PUSH)) {
                 broadcastIntent  = new Intent("com.mad.metronome.LastLoop");
                 broadcastIntent.putExtra(TIMESTAMP, data.getString(LOOP));
