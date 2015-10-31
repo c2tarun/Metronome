@@ -22,20 +22,21 @@ public class PushReceiver extends ParsePushBroadcastReceiver {
 
     @Override
     protected void onPushReceive(Context context, Intent intent) {
-        super.onPushReceive(context, intent);
         Log.d(TAG, "Received push");
         Intent broadcastIntent = null;
         JSONObject data = null;
         try {
             data = new JSONObject(intent.getExtras().getString("com.parse.Data"));
             String cause = data.getString("cause");
-            if(cause.equals(START_TIMER_PUSH)) {
-                broadcastIntent  = new Intent("com.mad.metronome.TimeStampPush");
+            if (cause.equals(START_TIMER_PUSH)) {
+                broadcastIntent = new Intent("com.mad.metronome.TimeStampPush");
                 broadcastIntent.putExtra(TIMESTAMP, data.getString(TIMESTAMP));
                 broadcastIntent.putExtra(SERVERTIME, data.getString(SERVERTIME));
-            } else if(cause.equals(LAST_LOOP_PUSH)) {
-                broadcastIntent  = new Intent("com.mad.metronome.LastLoop");
+            } else if (cause.equals(LAST_LOOP_PUSH)) {
+                broadcastIntent = new Intent("com.mad.metronome.LastLoop");
                 broadcastIntent.putExtra(TIMESTAMP, data.getString(LOOP));
+            } else {
+                super.onPushReceive(context, intent);
             }
         } catch (JSONException e) {
             e.printStackTrace();

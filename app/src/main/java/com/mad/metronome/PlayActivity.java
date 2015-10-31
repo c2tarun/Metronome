@@ -21,6 +21,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -159,17 +160,18 @@ public class PlayActivity extends AppCompatActivity {
             }
         };
 
-        registerReceiver(lastLoopReceiver, new IntentFilter("com.mad.metronome.LastLoop"));
 
         btnLastLoop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btnLastLoop.setEnabled(false);
+
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("GroupId", groupId);
                 ParseCloud.callFunctionInBackground("last_loop", params);
             }
         });
+
     }
 
     class MyThread extends Thread {
@@ -189,7 +191,17 @@ public class PlayActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         registerReceiver(timeStampReceiver, new IntentFilter("com.mad.metronome.TimeStampPush"));
-        ParsePush.subscribeInBackground(channelName);
+        registerReceiver(lastLoopReceiver, new IntentFilter("com.mad.metronome.LastLoop"));
+        ParsePush.subscribeInBackground(channelName, new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Registered with " + channelName);
+                } else {
+                    Log.d(TAG, "Channel registration failed " + e.getMessage());
+                }
+            }
+        });
 
     }
 
@@ -197,6 +209,7 @@ public class PlayActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(timeStampReceiver);
+        unregisterReceiver(lastLoopReceiver);
         Log.d(TAG, "Unsubscribing from channel " + channelName);
         ParsePush.unsubscribeInBackground(channelName);
     }
@@ -256,7 +269,6 @@ public class PlayActivity extends AppCompatActivity {
                 } else {
                     Intent intent = new Intent(PlayActivity.this, GroupDetailActivity.class);
                     startActivity(intent);
-                    unregisterReceiver(lastLoopReceiver);
                     finish();
                 }
             }
