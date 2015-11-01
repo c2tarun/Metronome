@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.FunctionCallback;
 import com.parse.GetDataCallback;
@@ -100,7 +99,6 @@ public class PlayActivity extends AppCompatActivity {
             public void onClick(View v) {
                 btnReady.setEnabled(false);
                 ParseUtil.setMemberStatus(groupId, ParseUser.getCurrentUser().getUsername(), ParseUtil.UserStatus.READY);
-                Toast.makeText(PlayActivity.this, "Updated DB", Toast.LENGTH_SHORT).show();
                 showProgressDialog("Waiting for others.");
             }
         });
@@ -121,7 +119,6 @@ public class PlayActivity extends AppCompatActivity {
                 timerStartTime += timeDiff;
                 // -- END
 
-                Toast.makeText(PlayActivity.this, "Current Time " + currentTime, Toast.LENGTH_SHORT).show();
                 Timer countDownStart = new Timer();
                 countDownStart.schedule(new TimerTask() {
                     @Override
@@ -141,6 +138,7 @@ public class PlayActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
+                        runOnUiThread(new MyThread("Go.."));
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -157,6 +155,8 @@ public class PlayActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 Log.d(TAG,"Received push for last loop");
                 enableLooping = false;
+                tvTimer.setTextSize(100);
+                tvTimer.setText("Last Loop");
             }
         };
 
@@ -169,6 +169,7 @@ public class PlayActivity extends AppCompatActivity {
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("GroupId", groupId);
                 ParseCloud.callFunctionInBackground("last_loop", params);
+                ParseUtil.clearGroup(groupId);
             }
         });
 
@@ -256,9 +257,7 @@ public class PlayActivity extends AppCompatActivity {
         if (isLeader) {
             btnLastLoop.setVisibility(View.VISIBLE);
         }
-        tvTimer.setVisibility(View.INVISIBLE);
         mp = new MediaPlayer();
-//        mp.setLooping(true);
         mp.setScreenOnWhilePlaying(true);
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override

@@ -9,15 +9,14 @@
 
     <Button
         android:id="@+id/readyButton"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp"
         android:text="READY!!"
         android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:layout_width="270dp"
         android:layout_height="80dp"
-        android:background="@drawable/ready_button" />
+        android:background="@drawable/ready_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -28,7 +27,7 @@
         android:textColor="#FFFFFF"
         android:background="@drawable/last_loop_button"
         android:visibility="invisible"
-        android:layout_below="@+id/timerTextView"
+        android:layout_centerVertical="true"
         android:layout_alignStart="@+id/readyButton" />
 
     <TextView
@@ -47,7 +46,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/timerTextView"
         android:layout_alignParentTop="true"
-        android:textSize="150dp"
+        android:textSize="150sp"
         android:textAlignment="center"
         android:layout_alignParentEnd="true" />
 

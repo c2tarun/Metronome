@@ -1,5 +1,6 @@
 package com.mad.metronome;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,11 +11,14 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.List;
 
 public class GroupDetailActivity extends AppCompatActivity {
 
@@ -108,11 +112,27 @@ public class GroupDetailActivity extends AppCompatActivity {
     }
 
     public void nextActivity() {
-        boolean isLeader = cbIsLeader.isChecked();
-        Intent intent = new Intent(GroupDetailActivity.this, PlayActivity.class);
-        intent.putExtra(GROUP_ID, groupId);
-        intent.putExtra(IS_LEADER, isLeader);
-        startActivity(intent);
-        finish();
+        final ProgressDialog pd = new ProgressDialog(GroupDetailActivity.this);
+        pd.setTitle("Validating Channel");
+        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pd.show();
+        ParseUtil.isChannelSetup(groupId, new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                pd.dismiss();
+                if (e != null || list == null || list.isEmpty()) {
+                    Toast.makeText(GroupDetailActivity.this, "Please check Channel name.", Toast.LENGTH_SHORT).show();
+                } else {
+                    boolean isLeader = cbIsLeader.isChecked();
+                    Intent intent = new Intent(GroupDetailActivity.this, PlayActivity.class);
+                    intent.putExtra(GROUP_ID, groupId);
+                    intent.putExtra(IS_LEADER, isLeader);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        });
+
+
     }
 }

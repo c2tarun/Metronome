@@ -87,6 +87,36 @@ public class ParseUtil extends MediaPlayer {
         });
     }
 
+    public static void clearGroup(String groupId) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(TB_GROUP_STATUS);
+        query.whereEqualTo(CL_GROUP_ID, groupId);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                deleteAll(list, e);
+            }
+        });
+
+        query = ParseQuery.getQuery(TB_GROUP_STRENGTH);
+        query.whereEqualTo(CL_GROUP_ID, groupId);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                deleteAll(list, e);
+            }
+        });
+    }
+
+    private static void deleteAll(List<ParseObject> list, ParseException e) {
+        if (e == null) {
+            if (list != null && !list.isEmpty()) {
+                for (ParseObject obj : list) {
+                    obj.deleteInBackground();
+                }
+            }
+        }
+    }
+
     public static void getSong(final String groupId, final GetDataCallback receiveSong) {
         Log.d(TAG, "Get song called");
         ParseQuery<ParseObject> query = ParseQuery.getQuery(TB_SONGS);
@@ -108,5 +138,10 @@ public class ParseUtil extends MediaPlayer {
         });
     }
 
+    public static void isChannelSetup(String groupId, final FindCallback<ParseObject> findCallback) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(TB_SONGS);
+        query.whereEqualTo("GroupID", groupId);
+        query.findInBackground(findCallback);
+    }
 
 }
